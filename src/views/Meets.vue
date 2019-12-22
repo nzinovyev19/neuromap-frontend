@@ -1,6 +1,5 @@
 <template>
   <div class="meets">
-    <pre>{{time}}</pre>
     <v-dialog
       v-model="modal"
       max-width="600px"
@@ -26,7 +25,7 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="formValues.name"
-                    :rules="nameRules"
+                    :rules="requiredRule"
                     label="Meet name*"
                     required
                   >
@@ -34,11 +33,7 @@
                 </v-col>
                 <v-col cols="6">
                   <div class="meet-date flex-column">
-                    <v-datetime-picker
-                      label="Select Datetime"
-                      v-model="datetime">
-                    </v-datetime-picker>
-                    <!-- <v-dialog
+                    <v-dialog
                       ref="datepickerFrom"
                       v-model="datepickerFrom"
                       :close-on-content-click="false"
@@ -49,8 +44,9 @@
                       <template v-slot:activator="{ on }">
                         <v-text-field
                           v-model="date.from"
-                          label="Date start:"
+                          label="Date start*"
                           prepend-icon="mdi-calendar-range"
+                          :rules="requiredRule"
                           readonly
                           v-on="on"
                         ></v-text-field>
@@ -58,6 +54,8 @@
                       <v-date-picker
                         v-if="datepickerFrom"
                         v-model="date.from"
+                        :max="date.to"
+                        required
                       >
                         <v-spacer></v-spacer>
                         <v-btn text color="primary" @click="datepickerFrom = false">Cancel</v-btn>
@@ -74,8 +72,9 @@
                       <template v-slot:activator="{ on }">
                         <v-text-field
                           v-model="time.from"
-                          label="Time start:"
+                          label="Time start*"
                           prepend-icon="mdi-alarm"
+                          :rules="requiredRule"
                           readonly
                           v-on="on"
                         ></v-text-field>
@@ -83,104 +82,113 @@
                       <v-time-picker
                         v-if="timepickerFrom"
                         v-model="time.from"
+                        :max="maxTime"
+                        format="24hr"
                         full-width
+                        required
                       >
                         <v-spacer></v-spacer>
                         <v-btn text color="primary" @click="timepickerFrom = false">Cancel</v-btn>
                         <v-btn text color="primary" @click="$refs.timepickerFrom.save(time.from)">OK</v-btn>
                       </v-time-picker>
-                    </v-dialog> -->
+                    </v-dialog>
                   </div>
                 </v-col>
                 <v-col cols="6">
-                  <!-- <div class="meet-date flex-column">
+                  <div class="meet-date flex-column">
                     <v-dialog
                       ref="datepickerTo"
                       v-model="datepickerTo"
                       :close-on-content-click="false"
-                      :return-value.sync="date.from"
+                      :return-value.sync="date.to"
                       persistent
                       width="290px"
                     >
                       <template v-slot:activator="{ on }">
                         <v-text-field
-                          v-model="date.from"
-                          label="Date end"
-                          prepend-icon="mdi-calendar-range"
-                          readonly
+                          v-model="date.to"
                           v-on="on"
+                          label="Date end*"
+                          prepend-icon="mdi-calendar-range"
+                          :rules="requiredRule"
+                          readonly
                         ></v-text-field>
                       </template>
                       <v-date-picker
                         v-if="datepickerTo"
-                        v-model="date.from"
+                        v-model="date.to"
+                        :min="date.from"
+                        required
                       >
                         <v-spacer></v-spacer>
                         <v-btn text color="primary" @click="datepickerTo = false">Cancel</v-btn>
-                        <v-btn text color="primary" @click="$refs.datepickerTo.save(date.from)">OK</v-btn>
+                        <v-btn text color="primary" @click="$refs.datepickerTo.save(date.to)">OK</v-btn>
                       </v-date-picker>
                     </v-dialog>
                     <v-dialog
                       ref="timepickerTo"
                       v-model="timepickerTo"
-                      :return-value.sync="time.from"
+                      :return-value.sync="time.to"
                       persistent
                       width="290px"
                     >
                       <template v-slot:activator="{ on }">
                         <v-text-field
-                          v-model="time.from"
-                          label="Time end:"
+                          v-model="time.to"
+                          label="Time end*"
                           prepend-icon="mdi-alarm"
+                          :rules="requiredRule"
                           readonly
                           v-on="on"
                         ></v-text-field>
                       </template>
                       <v-time-picker
                         v-if="timepickerTo"
-                        v-model="time.from"
+                        v-model="time.to"
+                        format="24hr"
+                        :min="minTime"
                         full-width
+                        required
                       >
                         <v-spacer></v-spacer>
                         <v-btn text color="primary" @click="timepickerTo = false">Cancel</v-btn>
-                        <v-btn text color="primary" @click="$refs.timepickerTo.save(time.from)">OK</v-btn>
+                        <v-btn text color="primary" @click="$refs.timepickerTo.save(time.to)">OK</v-btn>
                       </v-time-picker>
                     </v-dialog>
-                  </div> -->
+                  </div>
                 </v-col>
                 <v-col cols="6">
-                  <v-autocomplete
+                  <v-select
                     v-model="formValues.facilitator"
-                    :items="filterUsers([...formValues.members, formValues.secretary])"
-                    dense
-                    filled
+                    :items="filteredUsers"
                     label="Change facilitator*"
-                    :item-text="userText"
-                    :item-value="userValue"
+                    :rules="requiredRule"
+                    :item-text="getUserText"
+                    :item-value="getUserValue"
                     required
-                  ></v-autocomplete>
+                  ></v-select>
                 </v-col>
                 <v-col cols="6">
-                  <v-autocomplete
+                  <v-select
                     v-model="formValues.secretary"
-                    :items="filterUsers([...formValues.members, formValues.facilitator])"
-                    dense
-                    filled
+                    :items="filteredUsers"
                     label="Change secretary*"
-                    :item-text="userText"
-                    :item-value="userValue"
+                    :rules="requiredRule"
+                    :item-text="getUserText"
+                    :item-value="getUserValue"
                     required
-                  ></v-autocomplete>
+                  ></v-select>
                 </v-col>
                 <v-col cols="12">
-                  <v-autocomplete
+                  <v-select
                     v-model="formValues.members"
-                    :items="filterUsers([formValues.secretary, formValues.facilitator])"
-                    label="Members"
-                    :item-text="userText"
-                    :item-value="userValue"
+                    :items="filteredUsers"
+                    label="Members*"
+                    :item-text="getUserText"
+                    :item-value="getUserValue"
                     multiple
-                  ></v-autocomplete>
+                    required
+                  ></v-select>
                 </v-col>
               </v-row>
             </v-container>
@@ -188,8 +196,9 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="dialog = false">Close</v-btn>
-            <v-btn color="blue darken-1" text >Create</v-btn>
+            <v-btn color="blue darken-1" text @click="$refs.form.reset()">Reset</v-btn>
+            <v-btn color="blue darken-1" text @click="modal = false">Close</v-btn>
+            <v-btn color="blue darken-1" text @click="createMeet">Create</v-btn>
           </v-card-actions>
         </v-form>
       </v-card>
@@ -236,25 +245,68 @@ export default {
         from: null,
         to: null,
       },
-      nameRules: [
-        v => !!v || 'Name is required',
-        v => (v && v.length <= 10) || 'Name must be less than 10 characters',
+      requiredRule: [
+        v => !!v || 'This field is required',
       ],
     };
   },
   computed: {
     ...mapState(['meets', 'users']),
+    maxTime() {
+      if (this.date.from === this.date.to) return this.time.to;
+      return '';
+    },
+    minTime() {
+      if (this.date.from === this.date.to) return this.time.from;
+      return '';
+    },
+    filteredUsers() {
+      if (!this.date.to) return [];
+      if (!this.date.from) return [];
+      if (!this.time.to) return [];
+      if (!this.time.from) return [];
+      this.formatDateTime();
+      return this.users.filter(u => !u.reservationTimes.find(t => (
+        this.formValues.date.from >= t.from && this.formValues.date.from < t.to
+      ) || (
+        this.formValues.date.to >= t.from && this.formValues.date.to < t.to
+      )));
+    },
   },
   methods: {
-    filterUsers(excludeArray) {
-      if (!this.users) return [];
-      return this.users.filter(u => !excludeArray.includes(u));
-    },
-    userText(val) {
+    getUserText(val) {
       return `${val.firstName} ${val.lastName}`;
     },
-    userValue(val) {
-      return val;
+    getUserValue(val) {
+      return val.id;
+    },
+    formatDateTime() {
+      const { from: dateFrom, to: dateTo } = this.date;
+      const { from: timeFrom, to: timeTo } = this.time;
+      const hoursFrom = timeFrom.match(/^(\d+)/)[1];
+      const minutesFrom = timeFrom.match(/:(\d+)/)[1];
+      const hoursTo = timeTo.match(/^(\d+)/)[1];
+      const minutesTo = timeTo.match(/:(\d+)/)[1];
+      this.formValues.date.from = Date.parse(dateFrom)
+        + new Date(dateFrom).getTimezoneOffset() * 60 * 1000
+        + hoursFrom * 60 * 60 * 1000
+        + minutesFrom * 60 * 1000;
+      this.formValues.date.to = Date.parse(dateTo)
+        + new Date(dateTo).getTimezoneOffset() * 60 * 1000
+        + hoursTo * 60 * 60 * 1000
+        + minutesTo * 60 * 1000;
+    },
+    addReservationTimes() {
+      const meetUsers = new Set([...this.formValues.members, this.formValues.secretary, this.formValues.facilitator]);
+      meetUsers.forEach(u => this.$store.commit('setReservationTimes', [u, this.formValues.date]));
+    },
+    createMeet() {
+      if (this.$refs.form.validate()) {
+        this.formatDateTime();
+        this.$store.commit('setMeet', this.formValues);
+        this.addReservationTimes();
+        this.modal = false;
+      }
     },
   },
 };
