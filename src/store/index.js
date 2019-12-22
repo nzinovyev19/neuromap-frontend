@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import createPersistedState from 'vuex-persistedstate';
 
 Vue.use(Vuex);
 
@@ -7,19 +8,37 @@ export default new Vuex.Store({
   state: {
     users: [
       {
+        id: 'f5d47a64',
         firstName: 'Никита',
         lastName: 'Зиновьев',
-        id: 123312312,
+        reservationTimes: [
+          {
+            from: 1575902956975,
+            to: 1575903556975,
+          },
+        ],
       },
       {
+        id: 'f5d47a65',
         firstName: 'Нуришланг',
         lastName: 'Нуришлангович',
-        id: 123212312,
+        reservationTimes: [
+          {
+            from: 1575902956975,
+            to: 1575903556975,
+          },
+        ],
       },
       {
+        id: 'f5d47a66',
         firstName: 'Артур',
         lastName: 'PHP-хович',
-        id: 123112312,
+        reservationTimes: [
+          {
+            from: 1575902956975,
+            to: 1575903556975,
+          },
+        ],
       },
     ],
     meets: [
@@ -30,14 +49,8 @@ export default new Vuex.Store({
           to: 1575903556975,
         },
         members: [
-          {
-            firstName: 'Никита',
-            lastName: 'Зиновьев',
-          },
-          {
-            firstName: 'Нуришланг',
-            lastName: 'Нуришлангович',
-          },
+          'f5d47a64',
+          'f5d47a65',
         ],
       },
       {
@@ -47,21 +60,28 @@ export default new Vuex.Store({
           to: 1575903556975,
         },
         members: [
-          {
-            firstName: 'Артур',
-            lastName: 'PHP-хович',
-          },
+          'f5d47a66',
         ],
       },
     ],
   },
+  plugins: [
+    createPersistedState({
+      paths: ['users', 'meets'],
+    }),
+  ],
   mutations: {
     setUser(state, values) {
       state.users.push(Object.assign({}, values));
     },
+    setMeet(state, values) {
+      state.meets.push(Object.assign({}, values));
+    },
+    setReservationTimes(state, [userId, timeObject]) {
+      state.users.find(u => userId === u.id).reservationTimes.push(timeObject);
+    },
   },
-  actions: {
-  },
-  modules: {
+  getters: {
+    userById: state => id => state.users.find(u => u.id === id),
   },
 });

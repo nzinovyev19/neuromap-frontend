@@ -12,7 +12,7 @@
         <UserCard
           v-for="(members, index) in meet.members"
           :key="index"
-          :user="members"
+          :user="userById(members)"
           :class="{ 'mt-3': index > 0 }"
         ></UserCard>
       </v-list-item>
@@ -21,13 +21,14 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import UserCard from '@/components/UserCard.vue';
 
 export default {
   filters: {
     getFormattedDate(msec) {
       if (!msec) return '';
-      const time = new Date();
+      const time = new Date(msec);
       const months = [
         'Января',
         'Февраля',
@@ -64,6 +65,7 @@ export default {
     UserCard,
   },
   computed: {
+    ...mapGetters(['userById']),
     status() {
       if (!this.meet.date?.from || !this.meet.date?.to) return '';
       const now = Date.now();
