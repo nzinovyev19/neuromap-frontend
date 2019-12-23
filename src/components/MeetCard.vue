@@ -4,10 +4,29 @@
     <v-card-subtitle>Дата проведения (с/до):
       {{ meet.date.from | getFormattedDate }} / {{ meet.date.to | getFormattedDate }}</v-card-subtitle>
     <v-card-subtitle class="pt-0">Статус встречи: {{ status }}</v-card-subtitle>
+    <v-card-text v-if="meet.facilitator && meet.secretary">
+      <v-row>
+        <v-col v-if="meet.facilitator" cols="6">
+          <v-card-text class="pb-1 pl-0">Facilitator:</v-card-text>
+          <UserCard
+            :user="userById(meet.facilitator)"
+          >
+          </UserCard>
+        </v-col>
+        <v-col v-if="meet.secretary" cols="6">
+          <v-card-text class="pb-1 pl-0">Secretary:</v-card-text>
+          <UserCard
+            :user="userById(meet.secretary)"
+          >
+          </UserCard>
+        </v-col>
+      </v-row>
+    </v-card-text>
     <v-list
       v-if="meet.members.length > 0"
       class="pb-5"
     >
+      <v-card-text class="pb-1">Members:</v-card-text>
       <v-list-item class="flex flex-column align-start">
         <UserCard
           v-for="(members, index) in meet.members"
