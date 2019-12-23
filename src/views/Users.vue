@@ -71,8 +71,10 @@ export default {
   data: () => ({
     dialog: false,
     formValues: {
+      id: '',
       firstName: '',
       lastName: '',
+      reservationTimes: [],
     },
     nameRules: [
       v => !!v || 'Name is required',
@@ -86,6 +88,7 @@ export default {
     ...mapMutations(['setUser']),
     createUser() {
       if (this.$refs.form.validate()) {
+        this.formValues.id = `f${(Math.floor((Math.random() * 1e8))).toString(16)}`;
         this.setUser(this.formValues);
         this.$refs.form.reset();
         this.dialog = false;

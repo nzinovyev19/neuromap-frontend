@@ -78,7 +78,10 @@ export default new Vuex.Store({
       state.meets.push(Object.assign({}, values));
     },
     setReservationTimes(state, [userId, timeObject]) {
-      state.users.find(u => userId === u.id).reservationTimes.push(timeObject);
+      const user = state.users.find(u => userId === u.id);
+      if (user) {
+        user.reservationTimes = timeObject;
+      }
     },
   },
   getters: {

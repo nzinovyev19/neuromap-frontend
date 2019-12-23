@@ -229,7 +229,7 @@ export default {
       timepickerFrom: false,
       formValues: {
         name: '',
-        members: '',
+        members: [],
         secretary: '',
         facilitator: '',
         date: {
